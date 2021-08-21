@@ -1,0 +1,25 @@
+name: CI
+on:
+  push:
+    branches:
+      - master
+      - 'release/**'
+  pull_request:
+jobs:
+  test-self:
+    strategy:
+      matrix:
+        platform: [ubuntu-20.04]
+    runs-on: ${{ matrix.platform }}
+    steps:
+    - uses: actions/setup-go@v2
+      with:
+        go-version: 1.17.x
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 1
+    - run: go get .
+    # Apply go-wrap-to-percent-w to the source code of go-wrap-to-percent-w itself
+    - run: go-wrap-to-percent-w -w *.go
+    - run: git diff
+    - run: go build
