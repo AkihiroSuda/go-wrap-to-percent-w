@@ -4,12 +4,15 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"os"
 	"strconv"
 )
 
 type visitor struct {
-	githubComPkgErrorsLocalName   string
-	githubComPkgErrorsUnremovable bool
+	githubComPkgErrorsLocalName string
+	githubComPkgErrorsNeeded    bool
+	stdErrorsNeeded             bool
+	fmtNeeded                   bool
 }
 
 func (v *visitor) Visit(node ast.Node) ast.Visitor {
@@ -27,14 +30,23 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 					switch f.Sel.Name {
 					case "Wrap", "Wrapf":
 						processWrap(n, f.Sel.Name)
+						v.fmtNeeded = true
 					case "Errorf":
 						processErrorf(n, f.Sel.Name)
+						v.fmtNeeded = true
+					case "New", "As", "Is":
+						v.stdErrorsNeeded = true
 					default:
-						v.githubComPkgErrorsUnremovable = true
+						fmt.Fprintf(os.Stderr, "WARNING: unsupported function ``%s.%s`, you'll have to modify the source manually.\n",
+							x.Name, f.Sel.Name)
+						v.githubComPkgErrorsNeeded = true
 					}
 				}
 			}
 		}
+	}
+	if v.githubComPkgErrorsNeeded && v.stdErrorsNeeded {
+		v.stdErrorsNeeded = false
 	}
 	return v
 }

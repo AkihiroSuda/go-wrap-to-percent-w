@@ -116,11 +116,14 @@ func transformAST(fSet *token.FileSet, astFile *ast.File) error {
 		return nil
 	}
 	ast.Walk(v, astFile)
-	if !v.githubComPkgErrorsUnremovable {
+	if v.fmtNeeded && !fmtFound {
+		prependImport(astFile, "fmt")
+	}
+	if !v.githubComPkgErrorsNeeded {
 		removeImport(astFile, githubComPkgErrors)
 	}
-	if !fmtFound {
-		prependImport(astFile, "fmt")
+	if v.stdErrorsNeeded {
+		prependImport(astFile, "errors")
 	}
 	return nil
 }
@@ -132,7 +135,9 @@ func removeImport(astFile *ast.File, importPath string) {
 			importsIdx = i
 		}
 	}
-	astFile.Imports = append(astFile.Imports[:importsIdx], astFile.Imports[importsIdx+1:]...)
+	if importsIdx > 0 {
+		astFile.Imports = append(astFile.Imports[:importsIdx], astFile.Imports[importsIdx+1:]...)
+	}
 	for _, decl := range astFile.Decls {
 		switch d := decl.(type) {
 		case *ast.GenDecl:

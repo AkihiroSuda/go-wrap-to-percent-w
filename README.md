@@ -11,8 +11,9 @@ introduced in [Go 1.13](https://go.dev/blog/go1.13-errors).
 | `errors.Wrap(err, "foo")`              | `fmt.Errorf("foo: %w", err)`             |
 | `errors.Wrapf(err, "foo %s %d", s, d)` | `fmt.Errorf("foo %s %d: %w", s, d, err)` |
 | `errors.Errorf("foo %s %d", s,d)`      | `fmt.Errorf("foo %s %d", s, d)`          |
+| `import "github.com/pkg/errors"`       | `import "errors"`
 
-TODO: convert `errors.New("foo")` to `stderrors.New("foo")` ?
+Unsupported functions and types: `Cause, WithMessage, WithMessagef, WithStack, Frame, StackTrace`
 
 ## Install
 
